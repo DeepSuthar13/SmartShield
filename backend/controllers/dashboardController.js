@@ -104,16 +104,24 @@ async function setDefence(req, res) {
       });
     }
 
-    // Update the defence config (update the single row)
-    await db.execute(
-      `UPDATE defence_config SET modes = :mode, updated_at = CURRENT_TIMESTAMP WHERE ROWNUM = 1`,
-      { mode }
+    // Try to update the first row
+    const result = await db.execute(
+      `UPDATE defence_config SET modes = :newMode, updated_at = CURRENT_TIMESTAMP WHERE ROWNUM = 1`,
+      { newMode: mode }
     );
 
-    return res.json({ message: `Defence mode set to: ${mode}`, mode });
+    // If no row was updated (table empty), insert the first row
+    if (result.rowsAffected === 0) {
+      await db.execute(
+        `INSERT INTO defence_config (modes) VALUES (:newMode)`,
+        { newMode: mode }
+      );
+    }
+
+    return res.json({ message: `Defence mode successfully updated to: ${mode}`, mode });
   } catch (err) {
     console.error('Set defence error:', err.message);
-    return res.status(500).json({ error: 'Failed to update defence mode' });
+    return res.status(500).json({ error: `Failed to update defence mode: ${err.message}` });
   }
 }
 

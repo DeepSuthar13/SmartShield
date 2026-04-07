@@ -22,17 +22,46 @@ const dbConfig = {
 };
 
 /**
- * Initialize the Oracle connection pool
+ * Initialize the Oracle connection pool and perform basic setup
  */
 async function initialize() {
   try {
     if (!pool) {
       pool = await oracledb.createPool(dbConfig);
       console.log('✅ Oracle DB pool created (verified thick mode)');
+      
+      // Ensure defence_config has at least one row
+      await ensureDefenceConfig();
     }
   } catch (err) {
     console.error('❌ Oracle DB pool creation failed:', err.message);
     throw err;
+  }
+}
+
+/**
+ * Helper to ensure the defence_config table is not empty
+ */
+async function ensureDefenceConfig() {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    const result = await connection.execute('SELECT COUNT(*) AS count FROM defence_config');
+    const count = result.rows[0].COUNT;
+    
+    if (count === 0) {
+      console.log('🛡️  Initialising defence_config with default "block" mode...');
+      await connection.execute(
+        "INSERT INTO defence_config (modes) VALUES ('block')",
+        {},
+        { autoCommit: true }
+      );
+    }
+  } catch (err) {
+    // Table might not exist yet, which is fine if they haven't run schema.sql
+    console.warn('⚠️  Could not initialize defence_config (table may not exist yet):', err.message);
+  } finally {
+    if (connection) await connection.close();
   }
 }
 
