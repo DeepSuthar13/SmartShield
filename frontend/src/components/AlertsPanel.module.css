@@ -1,0 +1,91 @@
+.card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.title svg {
+  color: var(--accent-orange);
+}
+
+.count {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  background: var(--accent-red);
+  color: white;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 0 6px;
+  margin-left: 4px;
+}
+
+.scrollArea {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  padding: 24px 0;
+}
+
+.alertItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+  animation: fadeIn 0.3s ease;
+}
+
+.alertItem:last-child {
+  border-bottom: none;
+}
+
+.alertDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-red);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.alertContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.alertMsg {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.alertTime {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: block;
+}

@@ -1,0 +1,101 @@
+.card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.title svg {
+  color: var(--accent-orange);
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  padding: 24px 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+  transition: background var(--transition-fast);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  background: var(--bg-card-hover);
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: var(--radius-sm);
+}
+
+.ip {
+  flex: 1;
+}
+
+.ip code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.badge {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.badgeRed {
+  background: var(--accent-red-light);
+  color: var(--accent-red);
+}
+
+.badgeOrange {
+  background: var(--accent-orange-light);
+  color: var(--accent-orange);
+}
+
+.badgePurple {
+  background: var(--accent-purple-light);
+  color: var(--accent-purple);
+}
+
+.time {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 100px;
+  text-align: right;
+}

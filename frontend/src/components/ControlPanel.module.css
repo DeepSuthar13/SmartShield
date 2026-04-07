@@ -1,0 +1,114 @@
+.card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+.title svg {
+  color: var(--accent-blue);
+}
+
+.modes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modeBtn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all var(--transition-base);
+  text-align: left;
+  position: relative;
+}
+
+.modeBtn:hover:not(:disabled) {
+  border-color: var(--mode-color);
+  background: var(--mode-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.modeBtn.active {
+  border-color: var(--mode-color);
+  background: var(--mode-bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mode-color) 15%, transparent);
+}
+
+.modeBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modeIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mode-color);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.modeInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modeLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modeDesc {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.activeBadge {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--mode-color);
+  background: white;
+  padding: 3px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.feedback {
+  margin-top: 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--accent-green);
+  text-align: center;
+  padding: 8px;
+  background: var(--accent-green-light);
+  border-radius: var(--radius-sm);
+  animation: fadeIn 0.3s ease;
+}
