@@ -12,16 +12,6 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- OTPs table (reserved for future use)
-CREATE TABLE otps (
-    id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    email VARCHAR2(255) NOT NULL,
-    otp_code VARCHAR2(10) NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
-    verified NUMBER(1) DEFAULT 0 
-        CHECK (verified IN (0,1))
-);
-
 -- Attack logs
 CREATE TABLE attack_logs (
     id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
