@@ -75,7 +75,7 @@ export default function DashboardPage() {
   function handleLogout() {
     localStorage.removeItem("smartshield_token");
     localStorage.removeItem("smartshield_user");
-    router.replace("/login");
+    window.location.href = "/login";
   }
 
   if (!user) return null;

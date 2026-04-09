@@ -17,32 +17,42 @@ try {
 }
 
 let pool = null;
+// Singleton promise — prevents multiple concurrent pool creations (race condition)
+let initPromise = null;
 
 const dbConfig = {
   user: process.env.ORACLE_USER,
   password: process.env.ORACLE_PASSWORD,
   connectString: process.env.ORACLE_URL,
-  poolMin: 1,
+  poolMin: 2,
   poolMax: 10,
   poolIncrement: 1,
+  poolTimeout: 60,
 };
 
 /**
- * Initialize the Oracle connection pool and perform basic setup
+ * Initialize the Oracle connection pool and perform basic setup.
+ * Uses a singleton promise to ensure only one pool is ever created,
+ * even when multiple queries fire concurrently at startup.
  */
 async function initialize() {
-  try {
-    if (!pool) {
-      pool = await oracledb.createPool(dbConfig);
-      console.log('✅ Oracle DB pool created (verified thick mode)');
-      
-      // Ensure defence_config has at least one row
-      await ensureDefenceConfig();
-    }
-  } catch (err) {
-    console.error('❌ Oracle DB pool creation failed:', err.message);
-    throw err;
+  if (pool) return; // Already initialized — fast path
+
+  if (!initPromise) {
+    initPromise = (async () => {
+      try {
+        pool = await oracledb.createPool(dbConfig);
+        console.log('✅ Oracle DB pool created (verified thick mode)');
+        await ensureDefenceConfig();
+      } catch (err) {
+        initPromise = null; // Allow retry on next call if pool creation failed
+        console.error('❌ Oracle DB pool creation failed:', err.message);
+        throw err;
+      }
+    })();
   }
+
+  await initPromise;
 }
 
 /**
