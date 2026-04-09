@@ -28,6 +28,7 @@ async function login(req, res) {
     const user = result.rows[0];
 
     // Compare password with bcrypt hash
+    console.log(`Attempting login for ${password} (ID: ${user.PASSWORD_HASH}), ${JSON.stringify(result)}`);
     const isValid = await bcrypt.compare(password, user.PASSWORD_HASH);
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid email or password' });

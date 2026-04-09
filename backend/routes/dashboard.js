@@ -3,6 +3,10 @@ const router = express.Router();
 const dashboardController = require('../controllers/dashboardController');
 const { verifyToken, adminOnly } = require('../middleware/authMiddleware');
 
+// POST /api/dashboard/push-traffic (internal — from detection engine)
+// Moved above verifyToken so the python script can hit it without a JWT
+router.post('/push-traffic', dashboardController.pushTraffic);
+
 // All dashboard routes require authentication
 router.use(verifyToken);
 
@@ -20,8 +24,5 @@ router.get('/traffic', dashboardController.getTraffic);
 
 // POST /api/dashboard/set-defence (admin only)
 router.post('/set-defence', adminOnly, dashboardController.setDefence);
-
-// POST /api/dashboard/push-traffic (internal — from detection engine)
-router.post('/push-traffic', dashboardController.pushTraffic);
 
 module.exports = router;

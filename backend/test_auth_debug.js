@@ -1,28 +1,18 @@
 
 require('dotenv').config();
-const oracledb = require('oracledb');
-const dbConfig = {
-  user: process.env.ORACLE_USER,
-  password: process.env.ORACLE_PASSWORD,
-  connectString: process.env.ORACLE_URL,
-};
+const db = require('./services/db');
 
 async function testFetch() {
-  let connection;
   try {
-    oracledb.thin = true;
-    connection = await oracledb.getConnection(dbConfig);
-    console.log('Successfully connected to Oracle DB.');
-    const result = await connection.execute(
-      'SELECT id, email, password_hash, role FROM users FETCH FIRST 1 ROWS ONLY',
-      [],
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    console.log('Testing with db service...');
+    const result = await db.execute(
+      'SELECT id, email, password_hash, role FROM users FETCH FIRST 1 ROWS ONLY'
     );
     if (result.rows.length > 0) {
       const user = result.rows[0];
       console.log('User keys:', Object.keys(user));
       console.log('PASSWORD_HASH type:', typeof user.PASSWORD_HASH);
-      console.log('PASSWORD_HASH instance:', user.PASSWORD_HASH ? user.PASSWORD_HASH.constructor.name : 'null');
+      console.log('PASSWORD_HASH value:', user.PASSWORD_HASH);
       
       // Test bcrypt if available
       try {
@@ -38,8 +28,6 @@ async function testFetch() {
     }
   } catch (err) {
     console.error('Error:', err.message);
-  } finally {
-    if (connection) await connection.close();
   }
 }
 

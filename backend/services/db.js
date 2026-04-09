@@ -1,14 +1,20 @@
 const oracledb = require('oracledb');
 
-// Use thick mode for Native Network Encryption support (requires Oracle Client)
+// Set fetchAsString to fetch CLOBs as strings
+oracledb.fetchAsString = [ oracledb.CLOB ];
+
+// Initialize Thick Mode globally, once, at startup
 try {
-  oracledb.initOracleClient();
+  if (process.env.ORACLE_CLIENT_LIB_DIR) {
+    oracledb.initOracleClient();
+  } else {
+    // If you're on Linux, sometimes you need to set LD_LIBRARY_PATH instead
+    oracledb.initOracleClient(); 
+  }
 } catch (err) {
-  console.error('Whoops! Thick mode error:', err);
+  console.error('Fatal Oracle Client Error:', err);
   process.exit(1);
 }
-
-oracledb.fetchAsString = [ oracledb.CLOB ];
 
 let pool = null;
 
