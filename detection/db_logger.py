@@ -13,11 +13,26 @@ import oracledb
 import os
 from datetime import datetime
 
+from dotenv import load_dotenv
+
+# Load the backend's .env file
+env_path = os.path.join(os.path.dirname(__file__), '..', 'backend', '.env')
+load_dotenv(dotenv_path=env_path)
+
+# Initialize Thick Mode for Oracle DB (Required for encrypted connections on Linux)
+lib_dir = os.environ.get("ORACLE_CLIENT_LIB_DIR", "")
+if lib_dir and os.path.exists(lib_dir):
+    try:
+        oracledb.init_oracle_client(lib_dir=lib_dir)
+        print(f"[DB_LOGGER] ✅ Oracle Thick Mode initialized using: {lib_dir}")
+    except Exception as e:
+        print(f"[DB_LOGGER] ⚠️  Oracle init_oracle_client failed: {e}")
+
 # Oracle DB config from environment
 DB_CONFIG = {
     "user": os.environ.get("ORACLE_USER", ""),
     "password": os.environ.get("ORACLE_PASSWORD", ""),
-    "connectString": os.environ.get("ORACLE_URL", ""),
+    "dsn": os.environ.get("ORACLE_URL", ""),
 }
 
 

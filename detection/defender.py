@@ -75,15 +75,16 @@ def _block_ip(ip_address):
 def _rate_limit_ip(ip_address):
     """
     Apply rate limiting via Nginx.
-    Writes IP to a rate-limited IPs file that Nginx reads.
+    Writes IP to the geo map file that Nginx reads for rate limiting.
+    Format: "IP" 1;
     """
     try:
         rate_limit_file = "/etc/nginx/conf.d/smartshield_ratelimit.conf"
 
-        # Create/append the rate limit map entry
-        entry = f'    "{ip_address}" 1;\n'
+        # Nginx geo map format: "IP" 1;
+        entry = f'"{ip_address}" 1;\n'
 
-        # Check if IP already exists
+        # Check if IP already exists to avoid duplicates
         if os.path.exists(rate_limit_file):
             with open(rate_limit_file, "r") as f:
                 if ip_address in f.read():
@@ -94,14 +95,14 @@ def _rate_limit_ip(ip_address):
         with open(rate_limit_file, "a") as f:
             f.write(entry)
 
-        # Reload Nginx
+        # Reload Nginx to pick up the new entry
         subprocess.run(
             ["sudo", "nginx", "-s", "reload"],
             capture_output=True,
             text=True,
         )
 
-        print(f"[DEFENDER] ✅ Rate-limited IP: {ip_address} (Nginx)")
+        print(f"[DEFENDER] ✅ Rate-limited IP: {ip_address} (Nginx geo map active)")
         return True
     except Exception as e:
         print(f"[DEFENDER] ❌ Rate limit error: {e}")
@@ -111,11 +112,39 @@ def _rate_limit_ip(ip_address):
 def _captcha_mark(ip_address):
     """
     Mark IP for CAPTCHA challenge.
-    The IP is marked in ip_actions table (handled by db_logger).
-    This function just logs the intent.
+    Writes IP to the Nginx geo map CAPTCHA file.
+    Nginx will redirect all requests from this IP to /captcha.
+    Format: "IP" 1;
     """
-    print(f"[DEFENDER] ✅ Marked IP for CAPTCHA: {ip_address}")
-    return True
+    try:
+        captcha_file = "/etc/nginx/conf.d/smartshield_captcha.conf"
+
+        # Nginx geo map format: "IP" 1;
+        entry = f'"{ip_address}" 1;\n'
+
+        # Check if IP already flagged
+        if os.path.exists(captcha_file):
+            with open(captcha_file, "r") as f:
+                if ip_address in f.read():
+                    print(f"[DEFENDER] IP {ip_address} already flagged for CAPTCHA")
+                    return True
+
+        # Write CAPTCHA entry to the Nginx map file
+        with open(captcha_file, "a") as f:
+            f.write(entry)
+
+        # Reload Nginx so it picks up the new CAPTCHA entry
+        subprocess.run(
+            ["sudo", "nginx", "-s", "reload"],
+            capture_output=True,
+            text=True,
+        )
+
+        print(f"[DEFENDER] ✅ CAPTCHA enforced for IP: {ip_address} (Nginx redirect active)")
+        return True
+    except Exception as e:
+        print(f"[DEFENDER] ❌ CAPTCHA mark error: {e}")
+        return False
 
 
 def get_defence_mode(connection):

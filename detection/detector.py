@@ -9,6 +9,9 @@ Output: prediction (0 = normal, 1 = attack)
 import os
 import joblib
 import numpy as np
+import warnings
+
+warnings.filterwarnings("ignore", message="X does not have valid feature names")
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pkl")
 

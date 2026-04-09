@@ -3,3 +3,4 @@ joblib
 oracledb
 requests
 numpy
+python-dotenv
