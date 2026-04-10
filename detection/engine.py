@@ -98,6 +98,21 @@ def main():
     window_requests = 0
     window_attacks = 0
 
+    import threading
+    def stats_pusher():
+        nonlocal window_requests, window_attacks, running
+        while running:
+            time.sleep(5)
+            status = "under_attack" if window_attacks > 0 else "normal"
+            push_traffic_stats(window_requests, window_attacks, status)
+            
+            # Reset counters for next window
+            window_requests = 0
+            window_attacks = 0
+
+    # Start the background thread for pushing stats
+    threading.Thread(target=stats_pusher, daemon=True).start()
+
     print("\n[ENGINE] 🔄 Starting packet capture...\n")
 
     try:
@@ -110,7 +125,7 @@ def main():
             # Add packet to flow builder
             completed_flows = flow_builder.add_packet(packet)
 
-            # Process completed flows (window just expired)
+            # Process completed flows (if any met the min_packets threshold)
             if completed_flows:
                 for flow in completed_flows:
                     src_ip = flow["src_ip"]
@@ -119,20 +134,29 @@ def main():
                     # Extract 12 features
                     features = extract_features(flow)
 
-                    # Predict
+                    # Get prediction from ML Model
                     prediction, confidence = detector.predict(features)
 
-                    if prediction == 1:
+                    # Heuristic Override: If traffic is undeniably high, it's an attack regardless of ML model
+                    # (Standard user traffic is usually < 10 PPS; 200 PPS is a very safe flood threshold)
+                    ts = [p["timestamp"] for p in flow["packets"]]
+                    raw_dur = max(ts) - min(ts) if len(ts) > 1 else 0.001
+                    raw_pps = pkt_count / raw_dur
+                    
+                    is_heuristic_attack = raw_pps > 200
+
+                    if prediction == 1 or is_heuristic_attack:
                         # ─── ATTACK DETECTED ─────────────────
                         window_attacks += 1
-
-                        print(f"🚨 ATTACK detected from {src_ip} "
-                              f"({pkt_count} pkts, confidence: {confidence:.2f})")
+                        
+                        reason = "Heuristic (High PPS)" if is_heuristic_attack and prediction == 0 else "ML Model"
+                        print(f"🚨 ATTACK detected from {src_ip} ({reason})")
+                        print(f"   [STATS] Packets: {pkt_count} | Confidence: {confidence*100:.1f}%")
+                        print(f"   [FEATURES] Dur: {features[0]/1_000_000:.3f}s | PPS: {features[1]:.1f} | IAT_Mean: {features[2]:.4f}us | Size_Mean: {features[6]:.1f}")
+                        print(f"   [FLAGS] SYN: {int(features[8])} | ACK: {int(features[9])} | RST: {int(features[10])} | PSH: {int(features[11])}")
 
                         # Read current defence mode from DB
-                        mode = "block"
-                        if db_conn:
-                            mode = get_defence_mode(db_conn)
+                        mode = get_defence_mode()
 
                         print(f"   → Defence mode: {mode}")
 
@@ -140,18 +164,15 @@ def main():
                         apply_defence(mode, src_ip)
 
                         # Log to DB
-                        if db_conn:
-                            log_detection_result(db_conn, src_ip, mode)
+                        log_detection_result(None, src_ip, mode)
                     else:
-                        print(f"✅ Normal traffic from {src_ip} ({pkt_count} pkts)")
-
-                # Push stats to backend after processing window
-                status = "under_attack" if window_attacks > 0 else "normal"
-                push_traffic_stats(window_requests, window_attacks, status)
-
-                # Reset window counters
-                window_requests = 0
-                window_attacks = 0
+                        if pkt_count > 100:
+                            print(f"🔍 DEBUG (High Traffic Normal) from {src_ip}")
+                            print(f"   [STATS] Packets: {pkt_count} | Confidence (Normal): {confidence*100:.1f}%")
+                            print(f"   [FEATURES] Dur: {features[0]/1_000_000:.3f}s | PPS: {features[1]:.1f} | IAT_Mean: {features[2]:.4f}us | Size_Mean: {features[6]:.1f}")
+                            print(f"   [FLAGS] SYN: {features[8]} | ACK: {features[9]} | RST: {features[10]} | PSH: {features[11]}")
+                        else:
+                            print(f"✅ Normal traffic from {src_ip} ({pkt_count} pkts)")
 
     except Exception as e:
         print(f"\n[ENGINE] ❌ Error: {e}")

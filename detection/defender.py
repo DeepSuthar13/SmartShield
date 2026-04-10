@@ -14,17 +14,11 @@ import subprocess
 import os
 
 
+from db_logger import get_connection
+
 def apply_defence(mode, ip_address, db_connection=None):
     """
     Apply the specified defence action against an IP.
-    
-    Args:
-        mode: 'block' | 'rate_limit' | 'captcha'
-        ip_address: The attacking IP address
-        db_connection: Oracle DB connection for logging
-    
-    Returns:
-        bool: True if action was applied successfully
     """
     if mode == "block":
         return _block_ip(ip_address)
@@ -147,19 +141,17 @@ def _captcha_mark(ip_address):
         return False
 
 
-def get_defence_mode(connection):
+def get_defence_mode(connection=None):
     """
     Read current defence mode from Oracle DB.
-    
-    Args:
-        connection: Oracle DB connection
-    
-    Returns:
-        str: 'block' | 'rate_limit' | 'captcha'
     """
     try:
-        cursor = connection.cursor()
-        cursor.execute("SELECT modes FROM defence_config WHERE ROWNUM = 1")
+        conn = get_connection() if connection is None else connection
+        if not conn:
+            return "block"
+
+        cursor = conn.cursor()
+        cursor.execute("SELECT modes FROM defence_config FETCH FIRST 1 ROW ONLY")
         row = cursor.fetchone()
         cursor.close()
 
@@ -167,5 +159,5 @@ def get_defence_mode(connection):
             return row[0]
         return "block"  # Default
     except Exception as e:
-        print(f"[DEFENDER] ❌ Failed to read defence mode: {e}")
+        print(f"[DEFENDER] ⚠️  Database read warning: {e}")
         return "block"

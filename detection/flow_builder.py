@@ -14,7 +14,7 @@ import time
 from collections import defaultdict
 
 # Flow window duration in seconds
-WINDOW_DURATION = 5
+WINDOW_DURATION = 0.1
 
 # Minimum packets required to consider a flow valid
 MIN_PACKETS_PER_FLOW = 5

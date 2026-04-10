@@ -21,6 +21,7 @@ def start_capture():
     cmd = [
         "sudo", "tcpdump",
         "-i", "any",     # All interfaces
+        "not port 5000 and not port 3000", # Filter out internal dashboard/API traffic
         "-nn",           # No DNS lookup (faster)
         "-l",            # Line-buffered output
         "-q",            # Quiet (less verbose)
